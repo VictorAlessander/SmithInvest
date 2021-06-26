@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup as BSoup
-import re
 from smith.abstracts.AbstractExtractor import AbstractExtractor
-from decimal import Decimal
+from .utils.sanitizor import Sanitizor
 
 
 @AbstractExtractor.register
@@ -9,24 +8,6 @@ class ExtractorStsInvestImpl(AbstractExtractor):
     def __init__(self, response):
         super(ExtractorStsInvestImpl, self).__init__()
         self.response = response
-
-    @staticmethod
-    def special_characters_remover(value):
-        return re.sub("[\t\n M]", "", value)
-
-    @staticmethod
-    def dot_remover(value):
-        return re.sub("[.]", "", value)
-
-    @staticmethod
-    def comma_handler(value):
-        return re.sub("[,]", ".", value)
-
-    def sanitize_currency_value(self, value):
-        special_characters_removed = self.special_characters_remover(value)
-        dot_removed = self.dot_remover(special_characters_removed)
-        comma_handled = self.comma_handler(dot_removed)
-        return Decimal(comma_handled)
 
     def parser(self):
         results = []
@@ -54,7 +35,7 @@ class ExtractorStsInvestImpl(AbstractExtractor):
                 "span", attrs={"class": "d-block"}
             )
             gross_profit_sanitized.append(
-                self.sanitize_currency_value(gross_profit_value.text)
+                Sanitizor(gross_profit_value.text).sanitize()
             )
 
         for operating_costs_elements in operating_costs.find_all(
@@ -64,7 +45,7 @@ class ExtractorStsInvestImpl(AbstractExtractor):
                 "span", attrs={"class": "d-block"}
             )
             operating_costs_sanitized.append(
-                self.sanitize_currency_value(operating_costs_value.text)
+                Sanitizor(operating_costs_value.text).sanitize()
             )
 
         results.append(gross_profit_sanitized)
@@ -79,7 +60,8 @@ class ExtractorStsInvestImpl(AbstractExtractor):
         if gross_profit_sanitized_size == operating_costs_sanitized_size:
             for x in range(0, gross_profit_sanitized_size):
                 operating_revenue_profit_values.append(
-                    gross_profit_sanitized[x] - abs(operating_costs_sanitized[x])
+                    gross_profit_sanitized[x]
+                    - abs(operating_costs_sanitized[x])
                 )
 
         data_collected = dict(
