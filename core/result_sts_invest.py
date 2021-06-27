@@ -2,9 +2,9 @@ from smith.abstracts.AbstractResult import AbstractResult
 
 
 @AbstractResult.register
-class ResultStsInvestImpl(AbstractResult):
+class ResultStsInvest(AbstractResult):
     def __init__(self, results):
-        super(ResultStsInvestImpl, self).__init__()
+        super(ResultStsInvest, self).__init__()
         self.results = results
 
     def get_results(self):

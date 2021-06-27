@@ -1,16 +1,13 @@
 # coding: UTF-8
 
 from core.status_invest import StatusInvest
-import sys
+import argparse
 
 
-def main(choice):
-    if choice == 1:
-        tickers = sys.argv[2::]
-
-        status_invest = StatusInvest(tickers)
-        status_invest.start()
-        status_invest.finish()
+def main(args):
+    status_invest = StatusInvest(args.tickers, args.international)
+    status_invest.start()
+    status_invest.finish()
 
 
 if __name__ == "__main__":
@@ -54,9 +51,11 @@ IIIIIIIIIInnnnnn    nnnnnn        vvv            eeeeeeeeeeeeee    sssssssssss  
     """
     )
 
-    try:
-        choice = int(sys.argv[1])
-    except IndexError:
-        print("Help: [1] Brasil / [2] America")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("tickers", nargs="+", type=str)
+    parser.add_argument(
+        "--international", action=argparse.BooleanOptionalAction, default=False
+    )
+    args = parser.parse_args()
 
-    main(choice)
+    main(args)

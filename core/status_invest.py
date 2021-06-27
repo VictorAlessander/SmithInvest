@@ -1,31 +1,38 @@
-from .result_sts_invest import ResultStsInvestImpl
-from .extractor_sts_invest import ExtractorStsInvestImpl
+from .result_sts_invest import ResultStsInvest
+from .extractor_sts_invest import ExtractorStsInvest
 from smith.avaliator import Avaliator
 from smith.chart.bar_chart import BarChart
 
 
 class StatusInvest:
-    def __init__(self, tickers):
+    def __init__(self, tickers, international):
         self.tickers = tickers
         self._database = None
         self._avaliator = None
         self._extrator = None
         self._result = None
+        self.international = international
+
+        if self.international:
+            self.base_url = "https://statusinvest.com.br/acoes/eua/"
+        else:
+            self.base_url = "https://statusinvest.com.br/acoes/"
 
     def start(self):
         results = []
         for ticker in self.tickers:
-            link = f"https://statusinvest.com.br/acoes/{ticker}"
+            link = f"{self.base_url}{ticker}"
             self._avaliator = Avaliator(link)
             self._avaliator.avaliate()
-            self._extractor = ExtractorStsInvestImpl(self._avaliator.connect())
+            self._extractor = ExtractorStsInvest(self._avaliator.connect())
+
+            import pdb
+
+            pdb.set_trace()
             results.append(self._extractor.parser())
 
-        self._result = ResultStsInvestImpl(results)
+        self._result = ResultStsInvest(results)
 
     def finish(self):
-        """
-        name: company
-        """
         bar_chart = BarChart(self._result.get_results())
         bar_chart.draw("group", "operating_revenue_profit.html")

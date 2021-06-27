@@ -4,15 +4,16 @@ from .utils.sanitizor import Sanitizor
 
 
 @AbstractExtractor.register
-class ExtractorStsInvestImpl(AbstractExtractor):
+class ExtractorStsInvest(AbstractExtractor):
     def __init__(self, response):
-        super(ExtractorStsInvestImpl, self).__init__()
+        super(ExtractorStsInvest, self).__init__()
         self.response = response
 
     def parser(self):
         results = []
         gross_profit_sanitized = []
         operating_costs_sanitized = []
+        years = ["2020", "2019", "2018", "2017", "2016"]
 
         content = BSoup(self.response.text, "html.parser")
 
@@ -24,6 +25,27 @@ class ExtractorStsInvestImpl(AbstractExtractor):
         )
 
         dre_table_body = dre_table.find("tbody")
+
+        # Verify if the respective url belongs to international sector
+        splitted_url_request = self.response.request.url.split("/")
+        if len(splitted_url_request) == 6:
+            op_revenue_profits = []
+            op_revenue_profit_elements = dre_table_body.select("tr")[7]
+
+            for element in op_revenue_profit_elements.find_all(
+                "td", attrs={"class": "level-0 value text-right DATA"}
+            ):
+                value = element.find("span", attrs={"class": "d-block"})
+                sanitized_value = Sanitizor(value.text).sanitize()
+                op_revenue_profits.append(sanitized_value)
+
+            company_ticker = splitted_url_request[5]
+
+            data_collected = dict(
+                name=company_ticker, x_axis=years, y_axis=op_revenue_profits
+            )
+
+            return data_collected
 
         gross_profit = dre_table_body.select("tr")[2]
         operating_costs = dre_table_body.select("tr")[3]
@@ -66,7 +88,7 @@ class ExtractorStsInvestImpl(AbstractExtractor):
 
         data_collected = dict(
             name=company_ticker,
-            x_axis=["2020", "2019", "2018", "2017", "2016"],
+            x_axis=years,
             y_axis=operating_revenue_profit_values,
         )
 
