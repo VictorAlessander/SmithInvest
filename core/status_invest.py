@@ -26,9 +26,6 @@ class StatusInvest:
             self._avaliator.avaliate()
             self._extractor = ExtractorStsInvest(self._avaliator.connect())
 
-            import pdb
-
-            pdb.set_trace()
             results.append(self._extractor.parser())
 
         self._result = ResultStsInvest(results)
