@@ -26,7 +26,7 @@ class StatusInvest:
             self._avaliator.avaliate()
             self._extractor = ExtractorStsInvest(self._avaliator.connect())
 
-            results.append(self._extractor.parser())
+            results.append(self._extractor.parser(self.international))
 
         self._result = ResultStsInvest(results)
 

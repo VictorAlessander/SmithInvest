@@ -1,2 +1,4 @@
-flake8
-black
+-r requirements.txt
+
+flake8==3.9.2
+black==21.6b0
